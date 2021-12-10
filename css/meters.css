@@ -185,11 +185,13 @@ li:last-child {
 .rdm { --job-color: #e87b7b; }
 .gnb { --job-color: #796d30; }
 .dnc { --job-color: #e2b0af; }
+.sge { --job-color: #80a0f0; }
+.rpr { --job-color: #965a90; }
 .blu { --job-color: #2459ff; }
 .lb  { --job-color: #2599be; }
 
-.mch { --actor-index:  0; }
-.acn { --actor-index:  1; }
+.acn { --actor-index:  0; }
+.arc { --actor-index:  1; }
 .ast { --actor-index:  2; }
 .brd { --actor-index:  3; }
 .blm { --actor-index:  4; }
@@ -202,21 +204,23 @@ li:last-child {
 .gnb { --actor-index: 12; }
 .lnc { --actor-index: 13; }
 .lb  { --actor-index: 14; }
-.arc { --actor-index: 15; }
+.mch { --actor-index: 15; }
 .mar { --actor-index: 16; }
 .mnk { --actor-index: 17; }
 .nin { --actor-index: 18; }
 .pld { --actor-index: 20; }
 .pet { --actor-index: 21; }
 .pgl { --actor-index: 22; }
-.rdm { --actor-index: 23; }
-.rog { --actor-index: 24; }
-.sam { --actor-index: 25; }
-.sch { --actor-index: 26; }
-.smn { --actor-index: 27; }
-.thm { --actor-index: 28; }
-.war { --actor-index: 29; }
-.whm { --actor-index: 30; }
+.rpr { --actor-index: 23; }
+.rdm { --actor-index: 24; }
+.rog { --actor-index: 25; }
+.sge { --actor-index: 26; }
+.sam { --actor-index: 27; }
+.sch { --actor-index: 28; }
+.smn { --actor-index: 29; }
+.thm { --actor-index: 30; }
+.war { --actor-index: 31; }
+.whm { --actor-index: 32; }
 
 .bar {
     position: absolute;
