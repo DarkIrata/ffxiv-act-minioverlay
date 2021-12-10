@@ -879,6 +879,7 @@ class App extends React.Component<AppProps, AppState> {
           [7523]: "Verraise", // RDM
           [125]: "Raise", // WHM
           [3603]: "Ascend", // AST
+          [24287]: "Egeiro", // SGE
         };
 
         return {
