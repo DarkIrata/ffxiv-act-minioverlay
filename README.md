@@ -1,3 +1,11 @@
+## Installation
+
+1. OverlayPlugin.dll tab
+2. New
+3. Preset > Custom, Type > MiniParse
+4. Pick the overlay you just created
+5. URL: See below
+
 ## Releases
 
 ### dev
