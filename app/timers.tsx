@@ -75,11 +75,10 @@ const DATA: { [actionID: number]: Entry } = {
     job: "ast",
     sets: ["damage"],
   },
-
   [0x1ce4]: {
     // Brotherhood
     duration: 15,
-    cooldown: 90,
+    cooldown: 120,
     scope: Scope.Friendly,
     targeting: Target.Many,
     job: "mnk",
@@ -87,8 +86,8 @@ const DATA: { [actionID: number]: Entry } = {
   },
   [0xde5]: {
     // Battle Litany
-    duration: 20,
-    cooldown: 180,
+    duration: 15,
+    cooldown: 120,
     scope: Scope.Friendly,
     targeting: Target.Many,
     job: "drg",
@@ -101,6 +100,33 @@ const DATA: { [actionID: number]: Entry } = {
     scope: Scope.Friendly,
     targeting: Target.Many,
     job: "dnc",
+    sets: ["damage"],
+  },
+  [0x1d60]: {
+    // Embolden
+    duration: 20,
+    cooldown: 120,
+    scope: Scope.Friendly,
+    targeting: Target.Many,
+    job: "rdm",
+    sets: ["damage"],
+  },
+  [0x5f55]: {
+    // Arcane Circle
+    duration: 20,
+    cooldown: 120,
+    scope: Scope.Friendly,
+    targeting: Target.Many,
+    job: "rpr",
+    sets: ["damage"],
+  },
+  [0x76]: {
+    // Battle Voice
+    duration: 15,
+    cooldown: 120,
+    scope: Scope.Friendly,
+    targeting: Target.Many,
+    job: "brd",
     sets: ["damage"],
   },
 
