@@ -14,7 +14,7 @@ import {
 
 const GCD = 2500;
 
-const LIMIT_BREAK = "Limit Break";
+const LIMIT_BREAK = "limit break";
 
 interface Encounter {
   title: string;
@@ -527,12 +527,13 @@ class Combatants extends React.Component<CombatantsProps> {
 
     const rows = _.take(this.props.combatants, maxRows).map(
       (combatant, rank) => {
-        const actor = combatant.name === LIMIT_BREAK ? "lb" : combatant.job;
+        const actor = combatant.job === LIMIT_BREAK ? "lb" : combatant.job;
+        const job = combatant.job === LIMIT_BREAK ? "" : combatant.job;
 
         const stats = _.merge(
           {
             actor,
-            job: combatant.job,
+            job,
             characterName: combatant.name,
             isSelf: combatant.isSelf,
           },
