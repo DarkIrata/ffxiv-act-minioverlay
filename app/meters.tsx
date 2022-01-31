@@ -692,6 +692,7 @@ interface AppState {
 
 class App extends React.Component<AppProps, AppState> {
   static readonly CLOCK_UPDATE_INTERVAL: Span = 100;
+  static readonly CLOCK_MAX_UPDATE: Span = 24 * 60 * 60 * 1000;
   static readonly HISTORY_KEY = "meters";
   static readonly PLAYER_NAME_KEY = "playerName";
 
@@ -893,7 +894,13 @@ class App extends React.Component<AppProps, AppState> {
     } else if (
       // Limit our time updates since they happen much more frequently than
       // action updates
-      serverTime > this.state.serverTime.add(App.CLOCK_UPDATE_INTERVAL)
+      serverTime > this.state.serverTime.add(App.CLOCK_UPDATE_INTERVAL) &&
+      // 2022-01-15: There's a bug in the network parser that produces a bad
+      // chat log statement (code 00) with a date of 2025-12-19. Once this
+      // happens, we fast forward our clock and get stuck there, so every fight
+      // becomes -1:00 long. We'll limit our updates to some arbitrarily large
+      // span to prevent this kind of thing from happening.
+      serverTime < this.state.serverTime.add(App.CLOCK_MAX_UPDATE)
     ) {
       const rollingLogData =
         this.state.rollingLogData === null
