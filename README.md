@@ -4,35 +4,33 @@
 2. New
 3. Preset > Custom, Type > MiniParse
 4. Pick the overlay you just created
-5. URL: See below
+5. URL: Paste the URL for either the "dev" or "stable" release
+   * dev: `https://dpatti.github.io/ffxiv-overlay/releases/dev/`
+   * stable: `https://dpatti.github.io/ffxiv-overlay/releases/stable/`
 
-## Releases
+## Changelog
 
-### dev
+### v5 (2022-01-30)
 
-URL: <https://dpatti.github.io/ffxiv-overlay/releases/dev/>
+* Added Sage and Reaper
+* Fixed bug where encounters show a duration of -1:00
+* NPCs are now filtered out
 
-### v4
-
-URL: <https://dpatti.github.io/ffxiv-overlay/releases/v4/>
+### v4 (2021-03-21)
 
 * Added new view for uptime based on action use
 * Automatically tracks the player's name and replaces "YOU"
 * Displays total encounter time instead of ACT's combat time
 * Filters out encounters with no combatants
 
-### v3
-
-URL: <https://dpatti.github.io/ffxiv-overlay/releases/v3/>
+### v3 (2021-03-06)
 
 * Shows limit break and other sources
 * New, cleaner class icons
 * Resets view to new encounter when it starts
 * Added new view for deaths
 
-### v2
-
-URL: <https://dpatti.github.io/ffxiv-overlay/releases/v2/>
+### v2 (2021-02-17)
 
 * Changed class colors to match fflogs
 * Fixed sorting of damage meters when dps is unknown due to an upstream
@@ -43,9 +41,7 @@ URL: <https://dpatti.github.io/ffxiv-overlay/releases/v2/>
   and hps
 * Encounter history persists between reloads
 
-### v1
-
-URL: <https://dpatti.github.io/ffxiv-overlay/releases/v1/>
+### v1 (2021-01-23)
 
 * Initial fork of [rdmty](https://github.com/billyvg/OverlayPlugin-themes)
 * Added raid dps to header

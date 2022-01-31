@@ -1,3 +1,4 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 releases/dev/app.js -diff
+releases/stable/app.js -diff
