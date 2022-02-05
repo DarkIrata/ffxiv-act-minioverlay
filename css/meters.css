@@ -175,7 +175,7 @@ li:last-child {
 .thm, .blm { --job-color: #a579d6; }
 .nin, .rog { --job-color: #af1964; }
 .arc, .brd { --job-color: #91ba5e; }
-.gld, .pld { --job-color: #a8d2e6; }
+.gla, .pld { --job-color: #a8d2e6; }
 .mrd, .war { --job-color: #cf2621; }
 .sch { --job-color: #8657ff; }
 .drk { --job-color: #d126cc; }
@@ -205,7 +205,7 @@ li:last-child {
 .lnc { --actor-index: 13; }
 .lb  { --actor-index: 14; }
 .mch { --actor-index: 15; }
-.mar { --actor-index: 16; }
+.mrd { --actor-index: 16; }
 .mnk { --actor-index: 17; }
 .nin { --actor-index: 18; }
 .pld { --actor-index: 20; }
