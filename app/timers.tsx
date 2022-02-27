@@ -129,6 +129,15 @@ const DATA: { [actionID: number]: Entry } = {
     job: "brd",
     sets: ["damage"],
   },
+  [0x64c9]: {
+    // Searing Light
+    duration: 30,
+    cooldown: 120,
+    scope: Scope.Friendly,
+    targeting: Target.Many,
+    job: "smn",
+    sets: ["damage"],
+  },
 
   // DEFENSIVE =============================================================
   [0x1d88]: {

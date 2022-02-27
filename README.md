@@ -10,6 +10,10 @@
 
 ## Changelog
 
+### dev
+
+* Fixed color for Gladiator and icon for Marauder
+
 ### v5 (2022-01-30)
 
 * Added Sage and Reaper
