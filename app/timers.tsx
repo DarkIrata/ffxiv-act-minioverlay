@@ -2,17 +2,7 @@ import _ from "lodash";
 import React from "react";
 import * as ACT from "./act";
 import { Dict, Option, Percent, Span, addEventListener } from "./util";
-
-enum Scope {
-  Friendly,
-  Enemy,
-}
-
-enum Target {
-  Self,
-  Single,
-  Many,
-}
+import { Database, Entry, Target, querySets } from "./db";
 
 enum State {
   Active = "active",
@@ -25,160 +15,6 @@ interface Event {
   target: string;
   castAt: Date;
 }
-
-type Entry = {
-  duration: Span;
-  cooldown: Span;
-  scope: Scope;
-  targeting: Target;
-  job: string;
-  sets: Array<string>;
-};
-
-const DATA: { [actionID: number]: Entry } = {
-  // TEST ==================================================================
-  [0x99]: {
-    // Thunder III (test)
-    duration: 24,
-    cooldown: 2.5,
-    scope: Scope.Enemy,
-    targeting: Target.Single,
-    job: "blm",
-    sets: ["test"],
-  },
-
-  // DAMAGE ================================================================
-  [0x8d2]: {
-    // Trick Attack
-    duration: 15,
-    cooldown: 60,
-    scope: Scope.Enemy,
-    targeting: Target.Single,
-    job: "nin",
-    sets: ["damage"],
-  },
-  [0x1d0c]: {
-    // Chain Stratagem
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Enemy,
-    targeting: Target.Single,
-    job: "sch",
-    sets: ["damage"],
-  },
-  [0x40a8]: {
-    // Divination
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "ast",
-    sets: ["damage"],
-  },
-  [0x1ce4]: {
-    // Brotherhood
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "mnk",
-    sets: ["damage"],
-  },
-  [0xde5]: {
-    // Battle Litany
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "drg",
-    sets: ["damage"],
-  },
-  [0x3f44]: {
-    // Technical Finish (Quadruple)
-    duration: 20,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "dnc",
-    sets: ["damage"],
-  },
-  [0x1d60]: {
-    // Embolden
-    duration: 20,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "rdm",
-    sets: ["damage"],
-  },
-  [0x5f55]: {
-    // Arcane Circle
-    duration: 20,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "rpr",
-    sets: ["damage"],
-  },
-  [0x76]: {
-    // Battle Voice
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "brd",
-    sets: ["damage"],
-  },
-  [0x64c9]: {
-    // Searing Light
-    duration: 30,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "smn",
-    sets: ["damage"],
-  },
-
-  // DEFENSIVE =============================================================
-  [0x1d88]: {
-    // Addle
-    duration: 10,
-    cooldown: 90,
-    scope: Scope.Enemy,
-    targeting: Target.Single,
-    job: "blm",
-    sets: ["mitigation", "test"],
-  },
-  [0x3e8c]: {
-    // Shield Samba
-    duration: 15,
-    cooldown: 120,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "dnc",
-    sets: ["mitigation"],
-  },
-  [0x3f18]: {
-    // Superbolide
-    duration: 8,
-    cooldown: 360,
-    scope: Scope.Friendly,
-    targeting: Target.Self,
-    job: "gnb",
-    sets: ["mitigation"],
-  },
-  [0x3f20]: {
-    // Heart of Light
-    duration: 15,
-    cooldown: 90,
-    scope: Scope.Friendly,
-    targeting: Target.Many,
-    job: "gnb",
-    sets: ["mitigation"],
-  },
-
-  // HEALING ===============================================================
-};
 
 class ActionIcon {
   static readonly _cache: { [actionID: number]: string } = {};
@@ -253,8 +89,13 @@ class TimerKey {
   }
 }
 
-interface TimerProps {
-  timer: Span;
+interface Timer {
+  actionDetails: Entry;
+  events: Event[];
+}
+
+interface TimerBarProps {
+  time: Span;
   percentage: Percent;
   icon: string | undefined;
   job: string;
@@ -265,10 +106,10 @@ interface TimerProps {
   subText: Option<string>;
 }
 
-class Timer extends React.Component<TimerProps> {
+class TimerBar extends React.Component<TimerBarProps> {
   render() {
     // FFXIV's buff timers use ceil(), so we do the same for consistency
-    const seconds = Math.ceil(this.props.timer);
+    const seconds = Math.ceil(this.props.time);
     const width = (this.props.percentage * 100).bound(0, 100).toFixed(2) + "%";
     const iconStyle = this.props.icon
       ? { backgroundImage: `url(${this.props.icon})` }
@@ -300,7 +141,8 @@ class Timer extends React.Component<TimerProps> {
 }
 
 interface TimersProps {
-  tracking: Map<TimerKey, Map<number, Event>>;
+  database: Database;
+  tracking: Map<TimerKey, Timer>;
   serverTime: Date;
   dismissRow: (_: TimerKey) => void;
 }
@@ -311,25 +153,29 @@ class Timers extends React.Component<TimersProps, TimersState> {
   render() {
     // Here we're traversing through a map of keys that correspond to a single
     // timer identified by the unique (action, source) tuple. The values are a
-    // mapping from targets to last event on that target. We're constructing a
-    // single array of unsorted timers from that distilled data.
-    const timers = Array.from(this.props.tracking).flatMap(([key, targets]) => {
-      const { duration, cooldown, targeting, job } = DATA[key.actionID];
+    // list of events within the last cooldown span. We're constructing a single
+    // array of unsorted timers from that distilled data.
+    const timers = Array.from(this.props.tracking).flatMap(([key, timer]) => {
+      const { duration, cooldown, targeting, job } = timer.actionDetails;
 
-      const event = _.maxBy(Array.from(targets.values()), "castAt");
+      // XXX: We don't even do anything interesting here with the events, we
+      // just take the last one. There's some world where we can color things
+      // differently if you miss a buff, for example, but right now the
+      // representation is a little confusing.
+      const event = _.last(timer.events);
       if (event === undefined) return [];
 
       const elapsed = Date.diff(this.props.serverTime, event.castAt) / 1000;
 
-      let state, timer, percentage;
+      let state, time, percentage;
 
       if (elapsed < duration) {
         state = State.Active;
-        timer = Math.max(0, duration - elapsed);
-        percentage = timer / duration;
+        time = Math.max(0, duration - elapsed);
+        percentage = time / duration;
       } else if (elapsed < cooldown * 2) {
         state = State.Cooldown;
-        timer = Math.max(0, cooldown - elapsed);
+        time = Math.max(0, cooldown - elapsed);
         percentage = elapsed / cooldown;
       } else {
         // Arbitrarily hide cooldowns if they've been off for an entire cooldown
@@ -349,7 +195,7 @@ class Timers extends React.Component<TimersProps, TimersState> {
       return {
         key,
         state,
-        timer,
+        time,
         percentage,
         icon,
         job,
@@ -362,14 +208,14 @@ class Timers extends React.Component<TimersProps, TimersState> {
 
     const ranking = [
       ({ state }: Timer) => (state === State.Active ? 0 : 1),
-      ({ timer }: Timer) => timer,
+      ({ time }: Timer) => time,
       ({ key }: Timer) => key.actionID,
     ];
 
     return (
       <ul className="timers">
         {_.sortBy(timers, ...ranking).map(({ key, ...timer }) => (
-          <Timer
+          <TimerBar
             key={key.toString()}
             dismiss={() => this.props.dismissRow(key)}
             {...timer}
@@ -382,8 +228,7 @@ class Timers extends React.Component<TimersProps, TimersState> {
 
 interface AppProps {
   env: {
-    // XXX: this should be a Set<number>
-    actions: { [actionID: number]: true };
+    actionSets: string[];
     debug: boolean;
   };
 }
@@ -391,26 +236,24 @@ interface AppProps {
 interface AppState {
   serverTime: Date;
   lastClockUpdate: Option<number>;
-  tracking: Map<TimerKey, Map<number, Event>>;
+  tracking: Map<TimerKey, Timer>;
 }
 
 class App extends React.Component<AppProps, AppState> {
   static STORAGE_KEY = "timers";
   static TIME_RESOLUTION = 50;
+  database: Database;
 
   static env(query: Dict): AppProps["env"] {
-    const confSets = query.sets?.split(",") ?? [];
     return {
-      actions: _.mapValues(
-        _.pickBy(DATA, ({ sets }) => _.intersection(sets, confSets).length > 0),
-        (_): true => true
-      ),
+      actionSets: query.sets?.split(",") ?? [],
       debug: "debug" in query,
     };
   }
 
   constructor(props: AppProps) {
     super(props);
+    this.database = querySets(props.env.actionSets);
     this.state = {
       serverTime: new Date(0),
       lastClockUpdate: null,
@@ -457,12 +300,12 @@ class App extends React.Component<AppProps, AppState> {
     sourceName: string,
     actionIDRaw: string,
     actionName: string,
-    targetID: string,
+    _targetID: string,
     targetName: string
   ) {
     const actionID = parseInt(actionIDRaw, 16);
-    if (actionID in this.props.env.actions) {
-      const { cooldown } = DATA[actionID];
+    if (actionID in this.database) {
+      const actionDetails = this.database[actionID];
       const { serverTime } = this.state;
       const payload = {
         source: sourceName,
@@ -471,15 +314,17 @@ class App extends React.Component<AppProps, AppState> {
         castAt: serverTime,
       };
       const key = TimerKey.for(actionID, sourceID);
-      const tracking = this.state.tracking.update(key, (targets) =>
-        (targets ?? new Map())
+      const tracking = this.state.tracking.update(key, (timer) => ({
+        actionDetails,
+        events: (timer?.events ?? [])
           // Since this is a new cast, we can evict anything that has been
           // around longer than the cooldown
           .filter(
-            ({ castAt }) => Date.diff(serverTime, castAt) < cooldown * 1000
+            ({ castAt }) =>
+              Date.diff(serverTime, castAt) < actionDetails.cooldown * 1000
           )
-          .update(targetID, (_) => payload)
-      );
+          .concat(payload),
+      }));
       this.setState({ tracking });
     }
   }
@@ -502,13 +347,14 @@ class App extends React.Component<AppProps, AppState> {
 
   dismissRow(key: TimerKey) {
     this.setState({
-      tracking: this.state.tracking.update(key, (_) => new Map()),
+      tracking: this.state.tracking.remove(key),
     });
   }
 
   render() {
     return (
       <Timers
+        database={this.database}
         dismissRow={(key) => this.dismissRow(key)}
         serverTime={this.state.serverTime}
         tracking={this.state.tracking}

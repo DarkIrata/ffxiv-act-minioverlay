@@ -79,6 +79,7 @@ Date.prototype.add = function (t: Span): Date {
 declare global {
   interface Map<K, V> {
     update(key: K, f: (_: Option<V>) => Option<V>): Map<K, V>;
+    remove(key: K): Map<K, V>;
     filter(f: (_: Option<V>) => boolean): Map<K, V>;
   }
 }
@@ -87,6 +88,13 @@ declare global {
 Map.prototype.update = function (key, f) {
   const x = f(this.get(key));
   return new Map(this).set(key, x);
+};
+
+// Functional deletion for maps
+Map.prototype.remove = function (key) {
+  const m = new Map(this);
+  m.delete(key);
+  return m;
 };
 
 // Functional filtering for maps
