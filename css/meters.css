@@ -189,6 +189,8 @@ li:last-child {
 .rpr { --job-color: #965a90; }
 .blu { --job-color: #2459ff; }
 .lb  { --job-color: #2599be; }
+.vpr  { --job-color: #ff00aa; }
+.pct  { --job-color: #b3ff00; }
 
 .acn { --actor-index:  0; }
 .arc { --actor-index:  1; }
@@ -221,6 +223,8 @@ li:last-child {
 .thm { --actor-index: 30; }
 .war { --actor-index: 31; }
 .whm { --actor-index: 32; }
+.vpr { --actor-index: 7; }
+.pct { --actor-index: 7; }
 
 .bar {
     position: absolute;
